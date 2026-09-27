@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EduGenie</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <h1>EduGenie</h1>
+
+    <h2>Google Gemini Powered Learning Assistant</h2>
+
+    <p>
+        Learn smarter, ask questions, practice and grow with AI.
+    </p>
+
+    <select id="task">
+        <option value="Explain">Explain</option>
+        <option value="QnA">QnA</option>
+        <option value="Quiz">Quiz</option>
+        <option value="Summary">Summary</option>
+        <option value="Recommend Path">Recommend Path</option>
+    </select>
+
+    <textarea
+        id="input"
+        placeholder="Enter your question, topic or content here..."
+    ></textarea>
+
+    <button onclick="submitTask()">Submit</button>
+
+    <h3>Result</h3>
+
+    <div id="output">
+        Your result will appear here...
+    </div>
+
+    <script>
+        async function submitTask() {
+
+            const task = document.getElementById("task").value;
+            const input = document.getElementById("input").value;
+            const output = document.getElementById("output");
+
+            if (!input.trim()) {
+                output.innerText = "Please enter something first.";
+                return;
+            }
+
+            output.innerText = "Processing...";
+
+            let url = "";
+
+            if (task === "Explain") {
+                url = "/explain?text=" + encodeURIComponent(input);
+            }
+
+            else if (task === "QnA") {
+                url = "/qa?question=" + encodeURIComponent(input);
+            }
+
+            else if (task === "Quiz") {
+                url = "/quiz?topic=" + encodeURIComponent(input);
+            }
+
+            else if (task === "Summary") {
+                url = "/summarize?text=" + encodeURIComponent(input);
+            }
+
+            else if (task === "Recommend Path") {
+                url = "/learn/recommendations?topic=" + encodeURIComponent(input);
+            }
+
+            try {
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error("Request failed");
+                }
+
+                const data = await response.json();
+
+                if (task === "QnA" || task === "Explain") {
+                    output.innerText = data.answer;
+                }
+
+                else if (task === "Summary") {
+                    output.innerText = data.summary;
+                }
+
+                else if (task === "Recommend Path") {
+                    output.innerText = data.recommendations;
+                }
+
+                else if (task === "Quiz") {
+                    output.innerText =
+                        "Quiz Topic: " + data.quiz.topic +
+                        "\n\n" +
+                        JSON.stringify(data.quiz.questions, null, 2);
+                }
+
+            } catch (error) {
+
+                output.innerText =
+                    "Failed to fetch. Please make sure the EduGenie server is running.";
+            }
+        }
+    </script>
+
+</body>
+</html>
